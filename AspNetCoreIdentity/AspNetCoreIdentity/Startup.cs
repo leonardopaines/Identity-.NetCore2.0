@@ -1,4 +1,7 @@
 ﻿using AspNetCoreIdentity.Config;
+using AspNetCoreIdentity.Extensions;
+using KissLog.Apis.v1.Listeners;
+using KissLog.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +38,11 @@ namespace AspNetCoreIdentity
             services.AddAuthorizationConfig();
             services.ResolveDependencies();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(typeof(AuditoriaFilter));
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
         }
 
         public void Configure(IApplicationBuilder app,
@@ -47,7 +54,8 @@ namespace AspNetCoreIdentity
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/erro/500");
+                app.UseStatusCodePagesWithRedirects("/erro/{0}");
                 app.UseHsts();
             }
 
@@ -56,6 +64,8 @@ namespace AspNetCoreIdentity
             app.UseCookiePolicy();
 
             app.UseAuthentication();
+
+            app.UseLogConfig(this.Configuration);
 
             app.UseMvc(routes =>
             {
